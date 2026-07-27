@@ -4,13 +4,36 @@ import { runCompletion } from "../../lib/ai-provider";
 
 const router: IRouter = Router();
 
-function buildSystemPrompt(submissionType: string, journalRequirements?: string | null): string {
+/** Count words the same way most word processors do. */
+function countWords(text: string): number {
+  return text.trim().split(/\s+/).filter((w) => w.length > 0).length;
+}
+
+function buildSystemPrompt(
+  submissionType: string,
+  wordCount: number,
+  journalRequirements?: string | null,
+): string {
   const typeLabel =
     submissionType === "structured-abstract"
       ? "Structured Abstract (Original Research)"
       : submissionType === "correspondence"
         ? "Correspondence / Letter to the Editor"
         : "Full Original Research Manuscript";
+
+  // Journal requirements section — placed FIRST so it overrides everything below.
+  const journalSection = journalRequirements
+    ? `\n\nJOURNAL-SPECIFIC REQUIREMENTS — these take full priority over every generic default below. For any check covered by these requirements, apply the journal's rule exactly and ignore the generic guidance:
+${journalRequirements}\n`
+    : "";
+
+  // Generic word-count guidance used only when no journal requirement specifies a limit.
+  const genericWordCountGuidance =
+    submissionType === "structured-abstract"
+      ? "typically 250–350 words"
+      : submissionType === "correspondence"
+        ? "typically 300–400 words"
+        : "typically 3,000–5,000 words for the main body";
 
   const checksDescription =
     submissionType === "structured-abstract"
@@ -19,14 +42,20 @@ function buildSystemPrompt(submissionType: string, journalRequirements?: string 
 - Methods: Is a methods section present and sufficiently described?
 - Results: Are results clearly reported with data?
 - Conclusion: Is a conclusion present and does it answer the objective?
-- Word count: Is the word count appropriate for a structured abstract (typically 250-350 words)?
+- Word count: The manuscript contains exactly ${wordCount} words (calculated by the server — do NOT re-estimate). Apply the following logic in strict order:
+    1. If journal-specific requirements specify a word limit (e.g. "maximum 250 words", "up to 300 words", "≤250 words"), use that limit: PASS if ${wordCount} ≤ limit, FAIL if ${wordCount} > limit.
+    2. If no journal word limit is specified, use the generic guidance (${genericWordCountGuidance}): PASS if within range, WARNING if slightly outside.
+    Your explanation must state the exact count (${wordCount} words) and the limit being applied.
 - Primary outcome: Is a clear primary outcome stated?`
       : submissionType === "correspondence"
         ? `
 - Central argument: Is there a clear, focused central argument or point?
 - Reference to prior article: Does the letter reference or respond to a specific published article?
 - Author contribution statement: Is an author contribution statement present?
-- Word count: Is the letter within typical correspondence limits (typically 300-400 words)?`
+- Word count: The manuscript contains exactly ${wordCount} words (calculated by the server — do NOT re-estimate). Apply the following logic in strict order:
+    1. If journal-specific requirements specify a word limit, use that limit: PASS if ${wordCount} ≤ limit, FAIL if ${wordCount} > limit.
+    2. If no journal word limit is specified, use the generic guidance (${genericWordCountGuidance}): PASS if within range, WARNING if slightly outside.
+    Your explanation must state the exact count (${wordCount} words) and the limit being applied.`
         : `
 - Introduction: Is there a clear introduction with rationale and objective?
 - Methods: Are the methods described (design, population, outcomes, analysis)?
@@ -34,16 +63,15 @@ function buildSystemPrompt(submissionType: string, journalRequirements?: string 
 - Discussion: Is there a discussion that interprets findings and acknowledges limitations?
 - Primary outcome: Is the primary outcome clearly defined and reported?
 - Conflict of interest / Funding statement: Is there a COI disclosure and/or funding statement?
-- Unsupported causal claims: Does the manuscript avoid overstating causality when evidence is only associative?`;
-
-  const journalSection = journalRequirements
-    ? `\n\nJOURNAL-SPECIFIC REQUIREMENTS (these take priority over generic defaults):\n${journalRequirements}`
-    : "";
+- Unsupported causal claims: Does the manuscript avoid overstating causality when evidence is only associative?
+- Word count: The manuscript contains exactly ${wordCount} words (calculated by the server — do NOT re-estimate). Apply the following logic in strict order:
+    1. If journal-specific requirements specify a word limit, use that limit: PASS if ${wordCount} ≤ limit, FAIL if ${wordCount} > limit.
+    2. If no journal word limit is specified, use the generic guidance (${genericWordCountGuidance}): PASS if within range, WARNING if slightly outside.
+    Your explanation must state the exact count (${wordCount} words) and the limit being applied.`;
 
   return `You are an expert scientific manuscript editor with 20+ years of experience reviewing submissions for top-tier medical and clinical journals. You have deep knowledge of ICMJE guidelines, structured reporting standards (CONSORT, STROBE, PRISMA), and journal submission requirements.
 
 Your task is to analyze a ${typeLabel} and assess its readiness for journal submission.${journalSection}
-
 Perform the following checks for this submission type:${checksDescription}
 
 You MUST respond with ONLY a valid JSON object — no markdown fences, no preamble, no trailing commentary. The object must match this exact structure:
@@ -77,8 +105,9 @@ router.post("/manuscript/check", async (req, res): Promise<void> => {
 
   const { text, submissionType, journalRequirements } = parsed.data;
 
-  const systemPrompt = buildSystemPrompt(submissionType, journalRequirements);
-  const userMessage = `Please analyze the following ${submissionType} for journal submission readiness:\n\n---\n${text}\n---`;
+  const wordCount = countWords(text);
+  const systemPrompt = buildSystemPrompt(submissionType, wordCount, journalRequirements);
+  const userMessage = `Please analyze the following ${submissionType} for journal submission readiness. It contains exactly ${wordCount} words.\n\n---\n${text}\n---`;
 
   let rawText: string;
   try {
