@@ -1,15 +1,39 @@
-# [Project name]
+# ManuscriptReady
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+An AI-powered journal submission readiness checker for medical students and researchers.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm --filter @workspace/api-server run dev` — run the API server
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+
+## AI Provider Configuration
+
+The AI backend is fully modular — swap providers with environment variables, no code changes needed.
+
+| Variable | Description | Default |
+|---|---|---|
+| `AI_PROVIDER` | `openai-compatible` or `anthropic` | `openai-compatible` |
+| `AI_API_KEY` | API key for the chosen provider | *(required)* |
+| `AI_BASE_URL` | Base URL for OpenAI-compatible endpoints | OpenAI default |
+| `AI_MODEL` | Model name | `llama-3.3-70b-versatile` |
+
+### Free provider quick-start (Groq)
+
+1. Sign up at https://console.groq.com (free, no credit card required)
+2. Create an API key
+3. Set these secrets/env vars:
+   - `AI_API_KEY` = your Groq key
+   - `AI_BASE_URL` = `https://api.groq.com/openai/v1`
+   - `AI_MODEL` = `llama-3.3-70b-versatile`
+
+### Other free/compatible providers
+
+- **OpenRouter** (free models): `AI_BASE_URL=https://openrouter.ai/api/v1`, `AI_MODEL=meta-llama/llama-3.1-8b-instruct:free`
+- **Ollama** (local): `AI_BASE_URL=http://localhost:11434/v1`, `AI_API_KEY=ollama`, `AI_MODEL=llama3.2`
+- **Anthropic**: `AI_PROVIDER=anthropic`, `AI_API_KEY=<key>`, `AI_MODEL=claude-sonnet-4-6`
 
 ## Stack
 
