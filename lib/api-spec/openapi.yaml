@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: manuscript
+    description: Manuscript readiness checking
 paths:
   /healthz:
     get:
@@ -24,6 +26,37 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /manuscript/check:
+    post:
+      operationId: checkManuscript
+      tags: [manuscript]
+      summary: Check manuscript readiness
+      description: Submits a manuscript or abstract for AI-powered submission readiness analysis
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ManuscriptCheckInput"
+      responses:
+        "200":
+          description: Readiness check result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ManuscriptCheckResult"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +66,76 @@ components:
           type: string
       required:
         - status
-
+    ManuscriptCheckInput:
+      type: object
+      required:
+        - text
+        - submissionType
+      properties:
+        text:
+          type: string
+          description: The manuscript or abstract text to check
+          minLength: 1
+        submissionType:
+          type: string
+          enum:
+            - structured-abstract
+            - correspondence
+            - full-manuscript
+          description: The type of submission being checked
+        journalRequirements:
+          type: ["string", "null"]
+          description: Optional journal-specific requirements to prioritize
+    ManuscriptCheckResult:
+      type: object
+      required:
+        - summary
+        - checks
+        - submissionType
+      properties:
+        summary:
+          type: string
+          description: Overall readiness summary
+        submissionType:
+          type: string
+          enum:
+            - structured-abstract
+            - correspondence
+            - full-manuscript
+        overallStatus:
+          type: string
+          enum:
+            - READY
+            - NEEDS_REVISION
+            - NOT_READY
+        checks:
+          type: array
+          items:
+            $ref: "#/components/schemas/CheckItem"
+    CheckItem:
+      type: object
+      required:
+        - name
+        - status
+        - explanation
+      properties:
+        name:
+          type: string
+          description: Name of the check performed
+        status:
+          type: string
+          enum:
+            - PASS
+            - WARNING
+            - FAIL
+          description: Result status of the check
+        explanation:
+          type: string
+          description: Specific actionable explanation for this check result
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
