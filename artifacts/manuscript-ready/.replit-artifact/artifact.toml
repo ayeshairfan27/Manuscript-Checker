@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "ManuscriptReady"
+version = "1.0.0"
+id = "artifacts/manuscript-ready"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19114
+
+[services.development]
+run = "pnpm --filter @workspace/manuscript-ready run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/manuscript-ready", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/manuscript-ready/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19114"
+BASE_PATH = "/"
