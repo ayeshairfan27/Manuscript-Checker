@@ -108,21 +108,21 @@ RULES:
 ### Home / Landing Screen
 
 <img width="1918" height="890" alt="image" src="https://github.com/user-attachments/assets/e84600e6-0c36-481e-9c5b-4117252e3e5f" />
-
+<br><br>
 <img width="1915" height="888" alt="image" src="https://github.com/user-attachments/assets/062d00fa-a012-4337-b786-25811078d3c5" />
 
 ### Input Form
 
 <img width="1915" height="884" alt="image" src="https://github.com/user-attachments/assets/0ed6ff70-6e0a-455e-b965-a035fe8b1fc8" />
-
+<br><br>
 <img width="1907" height="880" alt="image" src="https://github.com/user-attachments/assets/be7d8c6d-e6ae-498e-8ec6-53aa56c87709" />
 
 ### Results
 
 <img width="1918" height="880" alt="image" src="https://github.com/user-attachments/assets/b6f6d994-7482-4691-a6f0-022349fc6f70" />
-
+<br><br>
 <img width="1910" height="896" alt="image" src="https://github.com/user-attachments/assets/5fd41c13-7f02-4594-8122-5785a58cc613" />
-
+<br><br>
 <img width="1906" height="883" alt="image" src="https://github.com/user-attachments/assets/2e61ec0f-3875-4504-959a-bd58d0ff0d46" />
 
 
