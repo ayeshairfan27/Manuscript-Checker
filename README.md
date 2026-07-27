@@ -125,7 +125,6 @@ RULES:
 
 <img width="1906" height="883" alt="image" src="https://github.com/user-attachments/assets/2e61ec0f-3875-4504-959a-bd58d0ff0d46" />
 
-```
 
 ## How to Run This Project
 
