@@ -141,7 +141,7 @@ RULES:
 5. Open the app in your browser, paste a manuscript or abstract, select a submission type, and click **Check Submission Readiness**.
 
 Alternatively, use the live deployed version directly — no setup required:
-**[https://manuscript-checker--ayeshairfan27.replit.app](https://manuscript-checker--ayeshairfan27.replit.app)**
+**[[https://manuscript-checker--ayeshairfan27.replit.app](https://manuscript-checker--ayeshairfan27.replit.app](https://manuscript-checker--ayeshairfan27.replit.app/)])**
 
 ---
 
