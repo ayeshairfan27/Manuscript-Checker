@@ -10,7 +10,7 @@ Research-active medical students and trainees frequently prepare manuscripts, ab
 
 ## Live App
 
-🔗 **[https://manuscript-checker--ayeshairfan27.replit.app](https://manuscript-checker--ayeshairfan27.replit.app)**
+🔗 **[https://manuscript-checker--ayeshairfan27.replit.app)**
 
 ## Features
 
@@ -97,7 +97,7 @@ RULES:
 ## Tools, Services, and AI Models Used
 
 - **App builder:** Replit (Replit Agent for initial scaffolding, refined manually)
-- **AI model / provider:** Groq API (OpenAI-compatible endpoint) running **Llama 3.3 70B Versatile**
+- **AI model / provider:** Groq API (OpenAI-compatible endpoint) running **qwen/qwen3.6-27b**
 - **Hosting / deployment:** Replit Deployments (public)
 - **Version control:** GitHub (public repository)
 - **API key handling:** stored securely as a Replit Secret / environment variable, never committed to source control
