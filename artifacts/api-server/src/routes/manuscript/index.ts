@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { CheckManuscriptBody, CheckManuscriptResponse } from "@workspace/api-zod";
 import { runCompletion } from "../../lib/ai-provider";
+import { parseJsonObjectResponse } from "../../lib/ai-response";
 
 const router: IRouter = Router();
 
@@ -74,7 +75,7 @@ ${journalRequirements}\n`
 Your task is to analyze a ${typeLabel} and assess its readiness for journal submission.${journalSection}
 Perform the following checks for this submission type:${checksDescription}
 
-You MUST respond with ONLY a valid JSON object — no markdown fences, no preamble, no trailing commentary. The object must match this exact structure:
+IMPORTANT OUTPUT FORMAT: Respond with ONLY one valid JSON object. Do not use markdown or code fences. Do not write any preamble, explanation, or trailing text. The response must be parseable by JSON.parse and must match this exact structure:
 {
   "summary": "<2-3 sentence overall readiness assessment>",
   "overallStatus": "<READY | NEEDS_REVISION | NOT_READY>",
@@ -93,6 +94,7 @@ Rules:
 - overallStatus is NOT_READY when any check FAILs.
 - Each explanation must be specific to the submitted text — cite actual missing or present elements.
 - Be constructive and precise. If something is missing, state exactly what is missing and why it matters for submission.
+- Return valid JSON only, with double-quoted keys and string values. Do not include trailing commas.
 - Output the JSON object and nothing else.`;
 }
 
@@ -119,14 +121,20 @@ router.post("/manuscript/check", async (req, res): Promise<void> => {
     return;
   }
 
-  // Strip markdown code fences if the model wrapped the JSON anyway
-  const cleaned = rawText.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "");
-
   let aiResponse: unknown;
   try {
-    aiResponse = JSON.parse(cleaned);
-  } catch {
-    req.log.error({ rawText }, "Failed to parse AI JSON response");
+    aiResponse = parseJsonObjectResponse(rawText);
+  } catch (err) {
+    // Keep enough of the provider response to diagnose model formatting
+    // issues, while bounding log size and never logging the API key.
+    req.log.error(
+      {
+        err,
+        responseLength: rawText.length,
+        rawResponsePreview: rawText.slice(0, 12000),
+      },
+      "Failed to extract JSON object from AI response",
+    );
     res.status(500).json({ error: "AI returned an unparseable response. Please try again." });
     return;
   }

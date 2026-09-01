@@ -90,7 +90,24 @@ async function runWithOpenAICompatible(
     ],
   });
 
-  const text = response.choices[0]?.message?.content;
+  // Groq normally returns a string here. Some OpenAI-compatible providers
+  // return an array of text content parts, so normalize both shapes.
+  const content: unknown = response.choices[0]?.message?.content;
+  const text =
+    typeof content === "string"
+      ? content
+      : Array.isArray(content)
+        ? content
+            .map((part) =>
+              typeof part === "object" &&
+              part !== null &&
+              "text" in part &&
+              typeof part.text === "string"
+                ? part.text
+                : "",
+            )
+            .join("")
+        : "";
   if (!text) {
     throw new Error("OpenAI-compatible provider returned an empty response");
   }
